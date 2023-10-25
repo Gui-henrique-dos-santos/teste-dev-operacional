@@ -16,13 +16,16 @@ public class LoginController {
     private List<Produto> produtos;
     private List<Venda> vendas;
     private VendasController controladorPrincipal;
+    private List<Cliente> clientes;
 
-    public LoginController(List<Usuario> usuarios, List<Empresa> empresas, List<Produto> produtos, List<Venda> vendas, VendasController vendasController) {
+    public LoginController(List<Usuario> usuarios, List<Empresa> empresas, List<Produto> produtos, List<Venda> vendas,
+            VendasController vendasController, List<Cliente> clientes) {
         this.usuarios = usuarios;
         this.empresas = empresas;
         this.produtos = produtos;
         this.vendas = vendas;
         this.controladorPrincipal = vendasController;
+        this.clientes = clientes;
     }
 
     public void iniciar() {
@@ -32,6 +35,7 @@ public class LoginController {
     public void setControladorPrincipal(VendasController controladorPrincipal) {
         this.controladorPrincipal = controladorPrincipal;
     }
+
     public void realizarLogin(String username, String senha) {
         Usuario usuarioLogado = validarUsuario(username, senha);
 
@@ -45,17 +49,22 @@ public class LoginController {
             } else if (usuarioLogado.IsCliente()) {
                 // Lógica para cliente
                 Cliente clienteLogado = usuarioLogado.getCliente();
-                controladorPrincipal.setClienteLogado(clienteLogado);
-                TelaVenda.telaVenda(usuarioLogado, produtos, vendas, empresas, null);
+                if (clienteLogado != null) {
+                    controladorPrincipal.setClienteLogado(clienteLogado);
+                    TelaVenda.telaVenda(usuarioLogado, produtos, vendas, empresas, clientes);
+                } else {
+                    System.out.println("Erro: Cliente não encontrado.");
+                }
             }
         } else {
-            System.out.println("Senha incorreta ou usuário não encontrado.");
+            System.out.println("Erro: Senha incorreta ou usuário não encontrado.");
         }
     }
 
     private Usuario validarUsuario(String username, String senha) {
         for (Usuario usuario : usuarios) {
-            if (usuario.getUsername().equals(username) && usuario.getSenha().equals(senha)) {
+            if (usuario.getUsername() != null && usuario.getUsername().equals(username) && usuario.getSenha() != null
+                    && usuario.getSenha().equals(senha)) {
                 return usuario;
             }
         }

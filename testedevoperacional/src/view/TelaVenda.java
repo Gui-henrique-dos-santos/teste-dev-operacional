@@ -31,9 +31,8 @@ public class TelaVenda {
                     empresas.forEach(e -> {
                         System.out.println(e.getId() + " - " + e.getNome());
                     });
-
                     Integer escolhaEmpresa = sc.nextInt();
-                    Integer escolhaProduto = -1;
+                    Integer escolhaProduto;
 
                     do {
                         System.out.println("Escolha os seus produtos: ");
@@ -42,13 +41,20 @@ public class TelaVenda {
                                 System.out.println(p.getId() + " - " + p.getNome());
                             }
                         });
-
                         System.out.println("0 - Finalizar compra");
                         escolhaProduto = sc.nextInt();
 
-                        for (Produto produtoSearch : produtos) {
-                            if (produtoSearch.getId().equals(escolhaProduto)) {
-                                carrinho.add(produtoSearch);
+                        if (escolhaProduto != 0) {
+                            final Integer escolhaProdutoFinal = escolhaProduto;
+                            Optional<Produto> produtoOptional = produtos.stream()
+                                    .filter(p -> p.getId().equals(escolhaProdutoFinal)
+                                            && p.getEmpresa().getId().equals(escolhaEmpresa))
+                                    .findFirst();
+
+                            if (produtoOptional.isPresent()) {
+                                carrinho.add(produtoOptional.get());
+                            } else {
+                                System.out.println("Produto não encontrado.");
                             }
                         }
                     } while (escolhaProduto != 0);
@@ -56,24 +62,17 @@ public class TelaVenda {
                     System.out.println("************************************************************");
                     System.out.println("Resumo da compra: ");
                     carrinho.forEach(x -> {
-                        if (x.getEmpresa().getId().equals(escolhaEmpresa)) {
-                            System.out.println(x.getId() + " - " + x.getNome() + "    R$" + x.getPreco());
-                        }
+                        System.out.println(x.getId() + " - " + x.getNome() + "    R$" + x.getPreco());
                     });
-
-                    Empresa empresaEscolhida = empresas.stream()
+                    Optional<Empresa> empresaOptional = empresas.stream()
                             .filter(e -> e.getId().equals(escolhaEmpresa))
-                            .findFirst()
-                            .orElse(null);
-Optional<Cliente> clienteOptional = clientes.stream()
-    .filter(c -> c.getUsername().equals(usuarioLogado.getUsername()))
-    .findFirst();
+                            .findFirst();
+                    Optional<Cliente> clienteOptional = clientes.stream()
+                            .filter(c -> c.getUsername().equals(usuarioLogado.getUsername()))
+                            .findFirst();
 
-    Cliente clienteLogado = clienteOptional.get();
-
-                    if (empresaEscolhida != null && clienteLogado != null) {
-                        Venda venda = VendasController.criarVenda(carrinho, empresaEscolhida, clienteLogado, vendas);
-                        System.out.println("Total: R$" + venda.getValor());
+                    if (empresaOptional.isPresent() && clienteOptional.isPresent()) {
+                        VendasController.realizarCompra(carrinho, empresaOptional.get(), clienteOptional.get(), vendas);
                         System.out.println("************************************************************");
                     } else {
                         System.out.println("Empresa ou cliente não encontrados.");
@@ -82,6 +81,7 @@ Optional<Cliente> clienteOptional = clientes.stream()
                     carrinho.clear();
                     break;
                 }
+
                 case 2: {
                     VendasController.listarComprasCliente(usuarioLogado, vendas);
                     break;

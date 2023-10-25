@@ -65,6 +65,6 @@ public class Main {
             List<Produto> produtos, List<Produto> carrinho, List<Venda> vendas, VendasController vendasController) {
         
         TelaHome telaHome = new TelaHome();
-        telaHome.exibirTelaHome(new LoginController(usuarios, empresas, produtos, vendas, vendasController));
+        telaHome.exibirTelaHome(new LoginController(usuarios, empresas, produtos, vendas, vendasController, clientes));
     }
 }
